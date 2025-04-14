@@ -48,19 +48,19 @@ def compute_handcrafted_features(segment):
     # For each of the 9 axes, compute several statistical features
     for i in range(arr.shape[1]):
         axis = arr[:, i]
-        mean = np.mean(axis)
-        std = np.std(axis)
-        min_val = np.min(axis)
-        max_val = np.max(axis)
-        rng = max_val - min_val # Range
-        rms = np.sqrt(np.mean(axis**2)) # Root mean square
-        energy = np.sum(axis**2) / len(axis) # Signal energy
-        zcr = ((axis[:-1] * axis[1:]) < 0).sum() # Zero-crossing rate
+        mean = np.mean(axis)                        # ✅ SparseIMU 2023, UIST 2019
+        std = np.std(axis)                          # ✅ SparseIMU 2023, UIST 2019
+        min_val = np.min(axis)                      # ✅ SparseIMU 2023, UIST 2019
+        max_val = np.max(axis)                      # ✅ SparseIMU 2023, UIST 2019
+        rng = max_val - min_val                     # ➕ Derived from above features, range
+        rms = np.sqrt(np.mean(axis**2))             # ✅ HAR literature (energy-based movement)
+        energy = np.sum(axis**2) / len(axis)        # ✅ TsFresh-inspired; SparseIMU also references energy
+        zcr = ((axis[:-1] * axis[1:]) < 0).sum()    # ✅ Common in HAR/gesture detection (not explicitly in papers)
         
         features += [mean, std, min_val, max_val, rng, rms, energy, zcr]
     
     # Signal magnitude area (SMA) for the accelerometer axes
-    sma = np.mean(np.sum(np.abs(arr[:, :3]), axis=1))
+    sma = np.mean(np.sum(np.abs(arr[:, :3]), axis=1)) # Additional common HAR feature (SMA = Signal Magnitude Area)
     features.append(sma)
     
     return np.array(features)
