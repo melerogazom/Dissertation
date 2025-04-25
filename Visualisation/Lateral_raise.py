@@ -1,3 +1,5 @@
+# === Lateral Raise ===
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -66,7 +68,7 @@ def plot_f1_scores(signature_csv, handcrafted_csv):
     train_sizes_sig, f1_scores_sig, label_sig = evaluate_classifier(signature_csv, "Signature Methods", common_exercises[2])
     train_sizes_hand, f1_scores_hand, label_hand = evaluate_classifier(handcrafted_csv, "Handcrafted Methods", common_exercises[2])
         
-        # Plot the F1 scores for each exercise type
+    # Plot the F1 scores for each exercise type
     plt.figure(figsize=(8, 5))
     plt.plot(train_sizes_sig, f1_scores_sig, marker='o', label=label_sig)
     plt.plot(train_sizes_hand, f1_scores_hand, marker='s', label=label_hand)

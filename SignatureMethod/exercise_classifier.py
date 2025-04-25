@@ -1,4 +1,4 @@
-# === exercise classifier for the signature method ===
+# === Exercise classifier for the signature method ===
 
 import pandas as pd
 import numpy as np
@@ -11,7 +11,7 @@ import joblib
 df = pd.read_csv("signature_training_data.csv")
 
 # Ensure last two columns are: 'Exercise_Type' and 'Label'
-# Keep only rows labeled as actual reps
+# Keep only rows labeled as actual reps (1)
 df_rep = df[df['Label'] == 1]
 
 # Extract labels
@@ -32,7 +32,6 @@ clf.fit(X_train, y_train)
 
 # Predict and evaluate 
 y_pred = clf.predict(X_test)
-
 accuracy = accuracy_score(y_test, y_pred)
 report = classification_report(y_test, y_pred)
 

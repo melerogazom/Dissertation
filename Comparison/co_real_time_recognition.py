@@ -1,3 +1,5 @@
+# === Recognition of exercises for the handcrafted method ===
+
 from bleak import BleakClient
 import asyncio
 import struct
@@ -10,7 +12,7 @@ import os
 import time
 import joblib
 
-# ==== Configuration ====
+# Configuration 
 IMU_ADDRESS = "E6C97A8E-59A4-4ED8-B539-1EDE4EA69603" # MAC address of the IMU device
 CHARACTERISTIC_UUID = "0000ffe4-0000-1000-8000-00805f9a34fb" # BLE characteristic to read data from
 MIN_WINDOW_SIZE = 15 # Minimum IMU data window for feature extraction
@@ -18,21 +20,21 @@ CSV_FILE = "handcrafted_training_data.csv" # CSV file for storing features and l
 current_exercise = "" # Track current exercise type
 # clf = None # Will hold the classifier for the current exercise
 
-# ==== Globals ====
+# Globals 
 buffer = [] # Rolling buffer for IMU data points
 latest_segment = [] # Most recent segment used for feature extraction
 running = True # Flag to control the main loop
+# clf = None # Will hold the classifier for the current exercise
 
-# ==== Handle Ctrl+C ====
+# Handle to exit
 def signal_handler(sig, frame):
     global running
-    print("\n🚫 Stopping logger...")
+    print("\nStopping logger...")
     running = False
 
-# Register the signal handler to catch SIGINT (Ctrl+C)
 signal.signal(signal.SIGINT, signal_handler)
 
-# ==== Extracts per-axis handcrafted statistical features from IMU data ====
+# Extracts per-axis handcrafted statistical features from IMU data 
 def compute_handcrafted_features(segment):
     """
     Computes handcrafted statistical features from a segment of IMU data.
@@ -42,7 +44,7 @@ def compute_handcrafted_features(segment):
     Output:
         A 1D numpy array of features per axis + SMA.
     """
-    arr = np.array(segment)  # shape: (window_size, 9)
+    arr = np.array(segment)  
     features = []
     
     # For each of the 9 axes, compute several statistical features
@@ -65,9 +67,8 @@ def compute_handcrafted_features(segment):
     
     return np.array(features)
 
-# ==== Save to CSV ====
+# Save to CSV 
 def write_to_csv(features, label, exercise):
-    #  Writes a row of features along with label and exercise type to a CSV file.
     features_flattened = [f"{x:.4f}" for x in features.flatten()] # Format features nicely
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S") # Human-readable timestamp
     file_exists = os.path.isfile(CSV_FILE)
@@ -82,35 +83,31 @@ def write_to_csv(features, label, exercise):
         
         writer.writerow([timestamp] + features_flattened + [exercise, label])
     
-    print(f"✅ Data saved at {timestamp} with label {label}")
+    print(f"Data saved at {timestamp} with label {label}")
 
-# ==== User Input Thread ====
+# Manual input thread 
+# Handles user interaction: start capture, predict, label, save
 def user_input_thread():
-    """
-    Runs in a separate thread so the user can:
-    - Set the exercise type
-    - Trigger the collection of a movement window
-    - Enter the label for that window (rep or non-rep)
-    """
     global buffer, latest_segment, current_exercise, clf 
     while running:
-        current_exercise = input("✍️ Enter the exercise type (e.g., bicep_curl, lateral_raise, front_raise, tricep_pulldown): ").strip()
+        current_exercise = input("Enter the exercise type (e.g., bicep_curl, lateral_raise, front_raise, tricep_pulldown): ").strip()
         
+        # Load the classifier model for the current exercise
         # try:
         #     clf = joblib.load(f'activity_classifier_{current_exercise}.pkl')
-        #     print(f"✅ Loaded classifier for {current_exercise}")
+        #     print(f"Loaded classifier for {current_exercise}")
         # except Exception as e:
-        #     print(f"❌ Error loading classifier for {current_exercise}: {e}")
+        #     print(f"Error loading classifier for {current_exercise}: {e}")
         #     continue
 
         # Wait for user to start capture
-        input("➡️ Press Enter when you're ready to START capturing movement...")
-        print("⏳ Capturing movement window...")
+        input("Press Enter when you're ready to START capturing movement...")
+        print("Capturing movement window...")
         time.sleep(3) # Short delay to ensure IMU data is collected
 
         # Ensure enough data is available
         if len(buffer) < MIN_WINDOW_SIZE:
-            print("⚠️ Not enough data yet. Wait a few more seconds of movement.")
+            print("Not enough data yet. Wait a few more seconds of movement.")
             continue
         
         # Take the latest window of data
@@ -118,21 +115,19 @@ def user_input_thread():
         features = compute_handcrafted_features(latest_segment)
         features_flat = features.reshape(1, -1)
 
+        # Make prediction using the loaded classifier
         # if clf:
         #     prediction = clf.predict(features_flat)[0]
-        #   print(f"🤖 Real-time prediction: {'REP 💪' if prediction == 1 else 'NON-REP ❌'}")
+        #   print(f"Real-time prediction: {'REP ' if prediction == 1 else 'NON-REP '}")
         
         # Manual labeling
-        label = int(input("✍️ Enter true label [1=rep, 0=non-rep]: ").strip())
+        label = int(input("Enter true label [1=rep, 0=non-rep]: ").strip())
         write_to_csv(features, label, current_exercise)
-        print("✅ Data saved.")
+        print("Data saved.")
 
-# ==== IMU Data Callback Handler ====
+# IMU data callback handler
+# Converts raw BLE packet bytes into real IMU measurements.
 def process_imu_data(sender, data):
-    """
-    BLE callback function triggered when new IMU data is received.
-    Decodes binary data into readable IMU values.
-    """
     global buffer
     try:
         if len(data) >= 18:
@@ -154,21 +149,14 @@ def process_imu_data(sender, data):
             if len(buffer) > MIN_WINDOW_SIZE:
                 buffer.pop(0)
     except Exception as e:
-        print(f"⚠️ IMU data error: {e}")
+        print(f"IMU data error: {e}")
 
-# ==== Main ====
+# Main
 async def main():
-    """
-    Asynchronous function to:
-    - Connect to IMU device
-    - Start notification for data stream
-    - Launch user input thread
-    - Keep the program running until Ctrl+C
-    """
-    print(f"🔗 Connecting to IMU at {IMU_ADDRESS}...")
+    print(f"Connecting to IMU at {IMU_ADDRESS}")
     try:
         async with BleakClient(IMU_ADDRESS) as client:
-            print("✅ Connected. Start doing reps when ready.")
+            print("Connected. Start doing reps when ready.")
             await client.start_notify(CHARACTERISTIC_UUID, process_imu_data)
 
             # Start separate thread to handle user interaction
@@ -181,13 +169,13 @@ async def main():
                 await asyncio.sleep(0.1)
 
             await client.stop_notify(CHARACTERISTIC_UUID)
-            print("💪 Disconnected.")
+            print("Disconnected.")
 
     except Exception as e:
-        print(f"❌ BLE connection error: {e}")
+        print(f"BLE connection error: {e}")
 
-# ==== Run ====
+# Run
 if __name__ == "__main__":
     # Start the main BLE event loop
     asyncio.run(main())
-    print("🏁 Session complete.")
+    print("Session complete.")

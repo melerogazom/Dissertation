@@ -1,3 +1,5 @@
+# === Real-time_system_performance for the signature method ===
+
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
@@ -14,24 +16,24 @@ from tkinter import ttk
 from tkinter import font
 from tkinter import Canvas
 
-# ==== Configuration ====
-IMU_ADDRESS = "E6C97A8E-59A4-4ED8-B539-1EDE4EA69603"  # MAC address of the IMU device
-CHARACTERISTIC_UUID = "0000ffe4-0000-1000-8000-00805f9a34fb"  # BLE characteristic
-SIG_LEVEL = 3
-MIN_WINDOW_SIZE = 15
+# Configuration 
+IMU_ADDRESS = "E6C97A8E-59A4-4ED8-B539-1EDE4EA69603" # MAC address of the IMU device
+CHARACTERISTIC_UUID = "0000ffe4-0000-1000-8000-00805f9a34fb" # BLE characteristic to read data from
+SIG_LEVEL = 3 # Signature truncation level (degree of signature transform)
+MIN_WINDOW_SIZE = 15 # Minimum IMU data window for feature extraction
 
-# ==== Globals ====
+# Globals 
 buffer = []
 data_points = []
 running = True
-clf = joblib.load("exercise_type_classifier.pkl")  # Multi-class classifier
+clf = joblib.load("exercise_type_classifier.pkl") # Signature multi-class classifier
 prediction_label = None
 rep_count_label = None
 gyro_canvas = None
 accel_canvas = None
-rep_counts = {}  # Track reps per exercise type
+rep_counts = {} # Rep counter for each exercise
 
-# === Signature Processing ===
+# Signature Processing
 def compute_signature(data):
     path = np.array(data)
     return stream2sig(path, SIG_LEVEL)
@@ -39,9 +41,10 @@ def compute_signature(data):
 def is_motion_detected(segment):
     arr = np.array(segment)
     std = np.std(arr, axis=0)
-    return np.mean(std) > 0.2  # Threshold to detect stillness
+    return np.mean(std) > 0.2 # Threshold to detect stillness
 
-# === BLE IMU Data Handler ===
+# IMU data callback handler
+# Converts raw BLE packet bytes into real IMU measurements.
 def process_imu_data(sender, data):
     global buffer, data_points
     try:
@@ -60,14 +63,15 @@ def process_imu_data(sender, data):
             buffer.append(point)
             data_points.append((gx, gy, gz, ax, ay, az))
 
+            # Keep buffer size within limit
             if len(buffer) > MIN_WINDOW_SIZE:
                 buffer.pop(0)
             if len(data_points) > 100:
                 data_points.pop(0)
     except Exception as e:
-        print(f"⚠️ IMU data error: {e}")
+        print(f"IMU data error: {e}")
 
-# === Controlled Prediction Trigger ===
+# controlled prediction trigger with countdown
 def trigger_detection():
     countdown_and_predict(3)
 
@@ -98,7 +102,7 @@ def perform_prediction():
 
         update_visuals()
 
-# === GUI ===
+# GUI 
 def start_interface():
     global prediction_label, rep_count_label, gyro_canvas, accel_canvas
 
@@ -126,7 +130,7 @@ def start_interface():
 
     root.mainloop()
 
-# === Visualization Update ===
+# Visualization update
 def update_visuals():
     global gyro_canvas, accel_canvas, data_points
     if gyro_canvas is None or accel_canvas is None:
@@ -151,7 +155,7 @@ def update_visuals():
         accel_canvas.create_line(x, height/2 + (ay / 16.0) * 100, x, height/2, fill="#FF4500")
         accel_canvas.create_line(x, height/2 + (az / 16.0) * 100, x, height/2, fill="#9400D3")
 
-# === BLE Thread ===
+# BLE thread
 def run_ble():
     async def run():
         async with BleakClient(IMU_ADDRESS) as client:

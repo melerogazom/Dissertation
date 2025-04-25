@@ -11,7 +11,7 @@ import joblib
 df = pd.read_csv("handcrafted_training_data.csv")
 
 # Ensure last two columns are: 'Exercise_Type' and 'Label'
-# Keep only rows labeled as actual reps
+# Keep only rows labeled as actual reps (1)
 df_rep = df[df['Label'] == 1]
 
 # Extract labels
