@@ -1,17 +1,13 @@
 # === Real-time_system_performance for the handcrafted method ===
 
-import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
 import joblib
 import asyncio
 import threading
 import struct
-import time
 from bleak import BleakClient
 import tkinter as tk
 from tkinter import ttk
-from tkinter import font
 from tkinter import Canvas
 
 # Configuration 

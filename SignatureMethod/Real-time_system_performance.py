@@ -1,19 +1,14 @@
 # === Real-time_system_performance for the signature method ===
 
-import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
 import joblib
 import asyncio
 import threading
 import struct
-import time
-import os
 from bleak import BleakClient
 from esig import stream2sig
 import tkinter as tk
 from tkinter import ttk
-from tkinter import font
 from tkinter import Canvas
 
 # Configuration 

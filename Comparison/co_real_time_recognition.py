@@ -4,7 +4,6 @@ from bleak import BleakClient
 import asyncio
 import struct
 import signal
-import sys
 import numpy as np
 import csv
 import threading

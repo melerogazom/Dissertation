@@ -6,7 +6,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report
 import joblib
-import os
+
 
 # Load data
 df = pd.read_csv("handcrafted_training_data.csv")

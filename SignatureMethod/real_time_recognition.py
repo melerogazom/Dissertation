@@ -4,14 +4,13 @@ from bleak import BleakClient
 import asyncio
 import struct
 import signal
-import sys
 import numpy as np
 import esig  # Signature transform library (feature extraction technique)
 import csv
 import threading
 import os
 import time
-import joblib
+
 
 # Configuration
 IMU_ADDRESS = "E6C97A8E-59A4-4ED8-B539-1EDE4EA69603" # MAC address of the IMU device
