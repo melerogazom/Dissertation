@@ -29,10 +29,6 @@ Contributions to this project are welcome. If you have suggestions, bug fixes, o
     ```
 4. Open a pull request.
 
-
-## License
-This project is licensed under the MIT License.
-
 ## Contact
 For questions, feedback, or collaboration opportunities, please contact:
 
